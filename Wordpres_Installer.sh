@@ -109,5 +109,12 @@ sudo sed -i 's/upload_max_filesize = .*/upload_max_filesize = 4192M/' /etc/php/8
 sudo sed -i 's/post_max_size = .*/post_max_size = 4192M/' /etc/php/8.1/apache2/php.ini
 sudo systemctl restart apache2
 
+echo "   ____  _____                     _       ____              _           "
+echo "  / __ \| ____|___ _ __   __ _  __| | __ _|  _ \ _   _ _ __ (_) ___ __ _ "
+echo " / / _\` |  _| / __| '_ \ / _\` |/ _\` |/ _\` | |_) | | | | '_ \| |/ __/ _\` |"
+echo "| | (_| | |___\__ \ |_) | (_| | (_| | (_| |  _ <| |_| | | | | | (_| (_| |"
+echo " \ \__,_|_____|___/ .__/ \__,_|\__,_|\__,_|_| \_\__,__|_| |_|_|\___\__,_|"
+echo "  \____/          |_|                                                    "
+
+
 echo "Ingrese a: http://localhost o bien introduzca su dirección web"
-echo "Gracias por utilizar el script de @EspadaRunica"
