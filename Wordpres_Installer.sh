@@ -19,7 +19,7 @@ mysqlrootpass=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | head -c 12)
 
 #### Instalación de paquetes
 apt update && apt upgrade -y 
-apt install apache2 php php-bz2 php-mysqli php-curl php-gd php-intl php-common php-mbstring php-xml mysql-server -y
+apt install apache2 php php-bz2 php-mysqli php-curl php-gd php-intl php-common php-mbstring php-xml php-zip php-imagick mysql-server -y
 
 a2enmod rewrite
 
