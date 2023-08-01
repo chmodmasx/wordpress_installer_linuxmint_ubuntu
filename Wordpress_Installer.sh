@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/bash
 
 echo "   ____  _____                     _       ____              _           "
 echo "  / __ \| ____|___ _ __   __ _  __| | __ _|  _ \ _   _ _ __ (_) ___ __ _ "
@@ -7,25 +7,31 @@ echo "| | (_| | |___\__ \ |_) | (_| | (_| | (_| |  _ <| |_| | | | | | (_| (_| |"
 echo " \ \__,_|_____|___/ .__/ \__,_|\__,_|\__,_|_| \_\__,__|_| |_|_|\___\__,_|"
 echo "  \____/          |_|                                                    "
 
+echo "\n"
 
 install_dir="/var/www/html"
 #Creando credenciales de base de datos aleatorias
 db_name="wp`date +%s`"
 db_user=$db_name
-db_password=`date |md5sum |cut -c '1-12'`
+db_password=$(date | md5sum | cut -c '1-12')
 mysqlrootpass=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | head -c 12)
 
-#### Instalar paquetes para https y mysql
-apt update && apt upgrade -y 
-apt install apache2 php php-bz2 php-mysqli php-curl php-gd php-intl php-common php-mbstring php-xml php-zip php-imagick mysql-server phpmyadmin -y
+# Configuramos las respuestas para phpmyadmin
+echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/mysql/admin-pass password $mysqlrootpass" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/mysql/app-pass password $db_password" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/app-password-confirm password $db_password" | debconf-set-selections
 
+#### Instalar paquetes para https y mysql
+apt-get update && apt-get upgrade -y
+apt-get install -y apache2 php php-bz2 php-mysqli php-curl php-gd php-intl php-common php-mbstring php-xml php-zip php-imagick mysql-server phpmyadmin
 
 a2enmod rewrite
 
 # Configuramos Apache para phpMyAdmin
 echo "Configurando Apache para phpMyAdmin..."
 echo "Include /etc/phpmyadmin/apache.conf" >> /etc/apache2/apache2.conf
-
 
 #### Borra el directorio html por defecto y habilitamos apache
 rm /var/www/html/index.html
@@ -37,7 +43,7 @@ systemctl enable mysql
 systemctl start mysql
 
 /usr/bin/mysql -e "USE mysql;"
-/usr/bin/mysql -e "UPDATE user SET Password=PASSWORD($mysqlrootpass) WHERE user='root';"
+/usr/bin/mysql -e "UPDATE user SET Password=PASSWORD('$mysqlrootpass') WHERE user='root';"
 /usr/bin/mysql -e "FLUSH PRIVILEGES;"
 touch /root/.my.cnf
 chmod 640 /root/.my.cnf
@@ -49,13 +55,13 @@ sed -i '0,/AllowOverride\ None/! {0,/AllowOverride\ None/ s/AllowOverride\ None/
 
 systemctl restart apache2
 
-#### Descargamos el ultimo paquete de Wordpress y lo descomprimimos
+#### Descargamos el último paquete de Wordpress y lo descomprimimos
 if test -f /tmp/latest.tar.gz
 then
-echo "WP se descargó correctamente."
+    echo "WP se descargó correctamente."
 else
-echo "Descargando WordPress"
-cd /tmp/ && wget "http://wordpress.org/latest.tar.gz";
+    echo "Descargando WordPress"
+    cd /tmp/ && wget "http://wordpress.org/latest.tar.gz"
 fi
 
 /bin/tar -C $install_dir -zxf /tmp/latest.tar.gz --strip-components=1
@@ -93,7 +99,7 @@ grep -A50 'table_prefix' $install_dir/wp-config.php > /tmp/wp-tmp-config
 /usr/bin/lynx --dump -width 200 https://api.wordpress.org/secret-key/1.1/salt/ >> $install_dir/wp-config.php
 /bin/cat /tmp/wp-tmp-config >> $install_dir/wp-config.php && rm /tmp/wp-tmp-config -f
 /usr/bin/mysql -u root -e "CREATE DATABASE $db_name"
-/usr/bin/mysql -u root -e "CREATE USER '$db_name'@'localhost' IDENTIFIED WITH mysql_native_password BY '$db_password';"
+/usr/bin/mysql -u root -e "CREATE USER '$db_user'@'localhost' IDENTIFIED WITH mysql_native_password BY '$db_password';"
 /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON $db_name.* TO '$db_user'@'localhost';"
 
 ### Algunos limites de PHP que recomiendo
@@ -103,11 +109,21 @@ sudo sed -i 's/post_max_size = .*/post_max_size = 4192M/' /etc/php/8.1/apache2/p
 sudo systemctl restart apache2
 
 ######Display generated passwords to log file.
+echo "\n"
+echo "Aquí tus datos"
+
 echo "Database Name: " $db_name
 echo "Database User: " $db_user
 echo "Database Password: " $db_password
 echo "Mysql root password: " $mysqlrootpass
 
+echo "\n"
+echo "Datos phpmyadmin"
+
+echo "User: " $db_user
+echo "Password" $db_password
+
+echo "\n"
 
 echo "Ingrese a: http://localhost o bien introduzca su dirección web"
 echo "Gracias por utilizar el script de @EspadaRunica"
