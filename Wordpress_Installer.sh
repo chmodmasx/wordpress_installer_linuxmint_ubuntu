@@ -52,6 +52,7 @@ echo "user=root">>/root/.my.cnf
 echo "password="$mysqlrootpass>>/root/.my.cnf
 
 sed -i '0,/AllowOverride\ None/! {0,/AllowOverride\ None/ s/AllowOverride\ None/AllowOverride\ All/}' /etc/apache2/apache2.conf #Allow htaccess usage
+sudo sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 systemctl restart apache2
 
