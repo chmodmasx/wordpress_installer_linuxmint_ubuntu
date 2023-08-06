@@ -103,8 +103,9 @@ grep -A50 'table_prefix' $install_dir/wp-config.php > /tmp/wp-tmp-config
 /usr/bin/mysql -u root -e "CREATE USER '$db_user'@'localhost' IDENTIFIED WITH mysql_native_password BY '$db_password';"
 /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON $db_name.* TO '$db_user'@'localhost';"
 
-### Algunos limites de PHP que recomiendo
-sudo sed -i 's/memory_limit = .*/memory_limit = 256M/' /etc/php/8.1/apache2/php.ini
+### Algunos limites de PHP y WP que recomiendo
+sudo sed -i "/define( 'DB_COLLATE', '' );/a define( 'WP_MEMORY_LIMIT', '512M' );" /var/www/html/wp-config.php
+sudo sed -i 's/memory_limit = .*/memory_limit = 512M/' /etc/php/8.1/apache2/php.ini
 sudo sed -i 's/upload_max_filesize = .*/upload_max_filesize = 4192M/' /etc/php/8.1/apache2/php.ini
 sudo sed -i 's/post_max_size = .*/post_max_size = 4192M/' /etc/php/8.1/apache2/php.ini
 sudo systemctl restart apache2
