@@ -25,7 +25,7 @@ echo "phpmyadmin phpmyadmin/app-password-confirm password $db_password" | debcon
 
 #### Instalar paquetes para https y mysql
 apt-get update && apt-get upgrade -y
-apt-get install -y apache2 memcached php php-bz2 php-mysqli php-curl php-gd php-intl php-common php-mbstring php-xml php-zip php-imagick php-memcache mysql-server phpmyadmin
+apt-get install -y apache2 memcached php php-bz2 php-mysqli php-curl php-gd php-intl php-common php-mbstring php-xml php-zip php-imagick php-memcache redis-server php-redis mysql-server phpmyadmin
 
 a2enmod rewrite
 
