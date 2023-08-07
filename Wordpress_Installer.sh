@@ -105,6 +105,7 @@ grep -A50 'table_prefix' $install_dir/wp-config.php > /tmp/wp-tmp-config
 
 ### Algunos limites de PHP y WP que recomiendo
 sudo sed -i "/define( 'DB_COLLATE', '' );/a define( 'WP_MEMORY_LIMIT', '512M' );" /var/www/html/wp-config.php
+sudo sed -i 's/max_execution_time = 30/max_execution_time = 300/' /etc/php/8.1/apache2/php.ini
 sudo sed -i 's/memory_limit = .*/memory_limit = 512M/' /etc/php/8.1/apache2/php.ini
 sudo sed -i 's/upload_max_filesize = .*/upload_max_filesize = 4192M/' /etc/php/8.1/apache2/php.ini
 sudo sed -i 's/post_max_size = .*/post_max_size = 4192M/' /etc/php/8.1/apache2/php.ini
