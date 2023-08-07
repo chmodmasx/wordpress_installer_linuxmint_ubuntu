@@ -127,5 +127,5 @@ echo "Password" $db_password
 
 echo "\n"
 
-echo "Ingrese a: http://localhost o bien introduzca su dirección web"
+echo "Ingrese a: http://localhost/wp-admin o bien introduzca su dirección web"
 echo "Gracias por utilizar el script de @EspadaRunica"
