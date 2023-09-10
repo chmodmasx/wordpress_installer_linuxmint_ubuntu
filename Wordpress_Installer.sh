@@ -11,7 +11,7 @@ echo "\n"
 
 echo "Le pedira una contraseña a lo largo de la instalación, puede presionar Enter simplemente"
 echo "\n"
-read -p "Ingrese su nombre de dominio: " DOMAIN_USER
+read -p "Ingrese su nombre de dominio (por ejemplo mintlatam.com): " DOMAIN_USER
 
 DB_NAME="wp$(date +%s)"
 DB_USER="$db_name"
@@ -128,17 +128,42 @@ sudo sed -i "s/database_name_here/$DB_NAME/" /var/www/html/wp-config.php
 sudo sed -i "s/username_here/$DB_USER/" /var/www/html/wp-config.php
 sudo sed -i "s/password_here/$DB_PASSWORD/" /var/www/html/wp-config.php
 
-# Obtener las claves secretas de WordPress y agregarlas al archivo wp-config.php
-#grep -A50 'table_prefix' /var/www/html/wp-config.php > /tmp/wp-tmp-config
-#sed -i '/^\/\*\*#@/,/^ \*\/$/d' /var/www/html/wp-config.php
-#secret_keys=$(curl -s https://api.wordpress.org/secret-key/1.1/salt/)
-#echo "$secret_keys" >> /var/www/html/wp-config.php
+# URL de donde obtener las nuevas claves
+SECRET_KEY_URL="https://api.wordpress.org/secret-key/1.1/salt/"
+
+# Descargar las nuevas claves desde la URL
+new_keys=$(curl -s "$SECRET_KEY_URL")
+
+# Ruta al archivo wp-config.php
+config_file="/var/www/html/wp-config.php"
+
+# Comprobar si el archivo existe
+if [ -f "$config_file" ]; then
+  # Eliminar las líneas existentes relacionadas con las claves
+  sed -i '/^define( '\''AUTH_KEY'\''/d' "$config_file"
+  sed -i '/^define( '\''SECURE_AUTH_KEY'\''/d' "$config_file"
+  sed -i '/^define( '\''LOGGED_IN_KEY'\''/d' "$config_file"
+  sed -i '/^define( '\''NONCE_KEY'\''/d' "$config_file"
+  sed -i '/^define( '\''AUTH_SALT'\''/d' "$config_file"
+  sed -i '/^define( '\''SECURE_AUTH_SALT'\''/d' "$config_file"
+  sed -i '/^define( '\''LOGGED_IN_SALT'\''/d' "$config_file"
+  sed -i '/^define( '\''NONCE_SALT'\''/d' "$config_file"
+
+  # Agregar las nuevas claves al archivo
+  echo "$new_keys" >> "$config_file"
+
+  echo "Las claves se han actualizado en $config_file."
+else
+  echo "El archivo $config_file no existe."
+fi
+
 
 # Mostrar las contraseñas generadas en el archivo de registro
 echo "Aquí tus datos:"
-echo "Database Name: $DB_NAME"
-echo "Database User: $DB_USER"
-echo "Database Password: $DB_PASSWORD"
+echo "Database Name: $db_name"
+echo "Database User: $db_user"
+echo "Database Password: $db_password"
+echo "MySQL Root Password: $mysqlrootpass"
 
 echo "Instalación de WordPress completada. Accede a tu sitio en http://$DOMAIN"
 
