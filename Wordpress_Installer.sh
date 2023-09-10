@@ -139,9 +139,9 @@ echo "Instalación de WordPress completada. Accede a tu sitio en http://$DOMAIN"
 
 
 # Obtener las claves secretas de WordPress y agregarlas al archivo wp-config.php
-#grep -A50 'table_prefix' /var/www/html/wp-config.php > /tmp/wp-tmp-config
-#sed -i '/**#@/,/$p/d' /var/www/html/wp-config.php
-#secret_keys=$(curl -s https://api.wordpress.org/secret-key/1.1/salt/)
-#echo "$secret_keys" >> /var/www/html/wp-config.php
+grep -A50 'table_prefix' /var/www/html/wp-config.php > /tmp/wp-tmp-config
+sed -i '/**#@/,/$p/d' /var/www/html/wp-config.php
+secret_keys=$(curl -s https://api.wordpress.org/secret-key/1.1/salt/)
+echo "$secret_keys" >> /var/www/html/wp-config.php
 
 echo "Gracias por utilizar el script de @EspadaRunica"
