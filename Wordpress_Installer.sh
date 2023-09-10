@@ -11,6 +11,7 @@ echo "\n"
 
 #!/bin/bash
 
+echo "Cuando te pregunte por una contraseña durante la ejecución solo presiona Enter"
 read -p "Ingrese su nombre de dominio: " DOMAIN_USER
 
 DB_NAME="wp$(date +%s)"
