@@ -9,124 +9,139 @@ echo "  \____/          |_|                                                    "
 
 echo "\n"
 
-install_dir="/var/www/html"
-#Creando credenciales de base de datos aleatorias
-db_name="wp`date +%s`"
-db_user=$db_name
-db_password=$(date | md5sum | cut -c '1-12')
-mysqlrootpass=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | head -c 12)
+#!/bin/bash
 
-# Configuramos las respuestas para phpmyadmin
-echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
-echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
-echo "phpmyadmin phpmyadmin/mysql/admin-pass password $mysqlrootpass" | debconf-set-selections
-echo "phpmyadmin phpmyadmin/mysql/app-pass password $db_password" | debconf-set-selections
-echo "phpmyadmin phpmyadmin/app-password-confirm password $db_password" | debconf-set-selections
+read -p "Ingrese su nombre de dominio: " DOMAIN_USER
 
-#### Instalar paquetes para https y mysql
-apt-get update && apt-get upgrade -y
-apt-get install -y apache2 memcached php php-bz2 php-mysqli php-curl php-gd php-intl php-common php-mbstring php-xml php-zip php-imagick php-memcache redis-server php-redis mysql-server phpmyadmin
+DB_NAME="wp$(date +%s)"
+DB_USER="$db_name"
+DB_PASSWORD=$(date | md5sum | cut -c '1-12')
+DOMAIN="$DOMAIN_USER"
 
-a2enmod rewrite
 
-# Configuramos Apache para phpMyAdmin
-echo "Configurando Apache para phpMyAdmin..."
-echo "Include /etc/phpmyadmin/apache.conf" >> /etc/apache2/apache2.conf
+# Actualizar el sistema
+sudo apt update -y
+sudo apt upgrade -y
 
-#### Borra el directorio html por defecto y habilitamos apache
-rm /var/www/html/index.html
-systemctl enable apache2
-systemctl start apache2
+# Instalar Nginx
+sudo apt install nginx -y
+sudo systemctl enable nginx
+sudo systemctl start nginx
 
-#### iniciamos mysql y seteamos un password
-systemctl enable mysql
-systemctl start mysql
+# Instalar MySQL Server
+sudo apt install mysql-server -y
+sudo mysql_secure_installation <<EOF
 
-/usr/bin/mysql -e "USE mysql;"
-/usr/bin/mysql -e "UPDATE user SET Password=PASSWORD('$mysqlrootpass') WHERE user='root';"
-/usr/bin/mysql -e "FLUSH PRIVILEGES;"
-touch /root/.my.cnf
-chmod 640 /root/.my.cnf
-echo "[client]">>/root/.my.cnf
-echo "user=root">>/root/.my.cnf
-echo "password="$mysqlrootpass>>/root/.my.cnf
-
-sed -i '0,/AllowOverride\ None/! {0,/AllowOverride\ None/ s/AllowOverride\ None/AllowOverride\ All/}' /etc/apache2/apache2.conf #Allow htaccess usage
-sudo sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
-
-systemctl restart apache2
-
-#### Descargamos el último paquete de Wordpress y lo descomprimimos
-if test -f /tmp/latest.tar.gz
-then
-    echo "WP se descargó correctamente."
-else
-    echo "Descargando WordPress"
-    cd /tmp/ && wget "http://wordpress.org/latest.tar.gz"
-fi
-
-/bin/tar -C $install_dir -zxf /tmp/latest.tar.gz --strip-components=1
-chown www-data: $install_dir -R
-
-#### Creamos una configuración de WP y seteamos las credenciales de la base de datos.
-/bin/mv $install_dir/wp-config-sample.php $install_dir/wp-config.php
-
-/bin/sed -i "s/database_name_here/$db_name/g" $install_dir/wp-config.php
-/bin/sed -i "s/username_here/$db_user/g" $install_dir/wp-config.php
-/bin/sed -i "s/password_here/$db_password/g" $install_dir/wp-config.php
-
-cat << EOF >> $install_dir/wp-config.php
-define('FS_METHOD', 'direct');
+y
+$DB_PASSWORD
+$DB_PASSWORD
+y
+y
+y
+y
 EOF
 
-cat << EOF >> $install_dir/.htaccess
-# BEGIN WordPress
-<IfModule mod_rewrite.c>
-RewriteEngine On
-RewriteBase /
-RewriteRule ^index.php$ – [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.php [L]
-</IfModule>
-# END WordPress
+# Instalar PHP 8.1 y extensiones
+sudo apt install php8.1-fpm php8.1 php8.1-common php8.1-mysql php8.1-xml php8.1-xmlrpc php8.1-curl php8.1-gd php8.1-imagick php8.1-cli php8.1-imap php8.1-mbstring php8.1-opcache php8.1-soap php8.1-zip php8.1-intl php8.1-bcmath unzip -y
+
+# Configurar PHP
+sudo sed -i 's/upload_max_filesize =.*/upload_max_filesize = 1024M/' /etc/php/8.1/fpm/php.ini
+sudo sed -i 's/post_max_size =.*/post_max_size = 1200M/' /etc/php/8.1/fpm/php.ini
+sudo sed -i 's/memory_limit =.*/memory_limit = 512M/' /etc/php/8.1/fpm/php.ini
+sudo sed -i 's/max_execution_time =.*/max_execution_time = 600/' /etc/php/8.1/fpm/php.ini
+sudo sed -i 's/max_input_vars =.*/max_input_vars = 3000/' /etc/php/8.1/fpm/php.ini
+sudo sed -i 's/max_input_time =.*/max_input_time = 1000/' /etc/php/8.1/fpm/php.ini
+
+# Reiniciar PHP-FPM
+sudo service php8.1-fpm restart
+
+# Configurar Nginx
+sudo rm -rf /etc/nginx/sites-enabled/default
+sudo rm -rf /etc/nginx/sites-available/default
+
+# Crear configuración de Nginx para WordPress
+sudo tee /etc/nginx/sites-available/$DOMAIN > /dev/null <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    root /var/www/html;
+    index index.php index.html index.htm;
+    server_name $DOMAIN www.$DOMAIN;
+
+    client_max_body_size 500M;
+
+    location / {
+        try_files \$uri \$uri/ /index.php?\$args;
+    }
+
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+        expires max;
+        log_not_found off;
+    }
+
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
 EOF
 
-chown www-data: $install_dir -R
+# Habilitar el sitio en Nginx
+sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
 
-##### Configurando WP
-grep -A50 'table_prefix' $install_dir/wp-config.php > /tmp/wp-tmp-config
-sed -i '/**#@/,/$p/d' $install_dir/wp-config.php
-secret_keys=$(curl -s https://api.wordpress.org/secret-key/1.1/salt/)
-echo "$secret_keys" >> $install_dir/wp-config.php
-bin/mysql -u root -e "CREATE DATABASE $db_name"
-bin/mysql -u root -e "CREATE USER '$db_user'@'localhost' IDENTIFIED WITH mysql_native_password BY '$db_password';"
-bin/mysql -u root -e "GRANT ALL PRIVILEGES ON $db_name.* TO '$db_user'@'localhost';"
+# Reiniciar Nginx
+sudo systemctl restart nginx
 
-### Algunos limites de PHP y WP que recomiendo
-sudo sed -i "/define( 'DB_COLLATE', '' );/a define( 'WP_MEMORY_LIMIT', '512M' );" /var/www/html/wp-config.php
-sudo sed -i 's/max_execution_time = 30/max_execution_time = 300/' /etc/php/8.1/apache2/php.ini
-sudo sed -i 's/memory_limit = .*/memory_limit = 512M/' /etc/php/8.1/apache2/php.ini
-sudo sed -i 's/upload_max_filesize = .*/upload_max_filesize = 4192M/' /etc/php/8.1/apache2/php.ini
-sudo sed -i 's/post_max_size = .*/post_max_size = 4192M/' /etc/php/8.1/apache2/php.ini
-sudo systemctl restart apache2
+# Crear la base de datos y usuario de WordPress
+sudo mysql -u root -p <<MYSQL_SCRIPT
+CREATE DATABASE $DB_NAME;
+CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
+GRANT ALL ON $DB_NAME.* TO '$DB_USER'@'localhost';
+FLUSH PRIVILEGES;
+exit
+MYSQL_SCRIPT
 
-######Display generated passwords to log file.
-echo "\n"
-echo "Aquí tus datos"
+# Descargar e instalar WordPress
+cd /var/www/html
+sudo wget https://wordpress.org/latest.tar.gz
+sudo tar -zxvf latest.tar.gz --strip-components=1
+sudo rm -f latest.tar.gz
+sudo chown -R www-data:www-data /var/www/html/
+sudo chmod -R 755 /var/www/html/
 
-echo "Database Name: " $db_name
-echo "Database User: " $db_user
-echo "Database Password: " $db_password
-echo "Mysql root password: " $mysqlrootpass
+# Configurar wp-config.php
+sudo mv /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+sudo sed -i "s/database_name_here/$DB_NAME/" /var/www/html/wp-config.php
+sudo sed -i "s/username_here/$DB_USER/" /var/www/html/wp-config.php
+sudo sed -i "s/password_here/$DB_PASSWORD/" /var/www/html/wp-config.php
 
-echo "\n"
-echo "Datos phpmyadmin"
+# Mostrar las contraseñas generadas en el archivo de registro
+echo "Aquí tus datos:"
+echo "Database Name: $db_name"
+echo "Database User: $db_user"
+echo "Database Password: $db_password"
+echo "MySQL Root Password: $mysqlrootpass"
 
-echo "User: " $db_user
-echo "Password" $db_password
+echo "Instalación de WordPress completada. Accede a tu sitio en http://$DOMAIN"
 
-echo "\n"
 
-echo "Ingrese a: http://localhost/wp-admin o bien introduzca su dirección web"
+# Obtener las claves secretas de WordPress y agregarlas al archivo wp-config.php
+#grep -A50 'table_prefix' /var/www/html/wp-config.php > /tmp/wp-tmp-config
+#sed -i '/**#@/,/$p/d' /var/www/html/wp-config.php
+#secret_keys=$(curl -s https://api.wordpress.org/secret-key/1.1/salt/)
+#echo "$secret_keys" >> /var/www/html/wp-config.php
+
 echo "Gracias por utilizar el script de @EspadaRunica"
