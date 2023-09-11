@@ -134,30 +134,6 @@ SECRET_KEY_URL="https://api.wordpress.org/secret-key/1.1/salt/"
 # Descargar las nuevas claves desde la URL
 new_keys=$(curl -s "$SECRET_KEY_URL")
 
-# Ruta al archivo wp-config.php
-config_file="/var/www/html/wp-config.php"
-
-# Comprobar si el archivo existe
-if [ -f "$config_file" ]; then
-  # Eliminar las líneas existentes relacionadas con las claves
-  sed -i '/^define( '\''AUTH_KEY'\''/d' "$config_file"
-  sed -i '/^define( '\''SECURE_AUTH_KEY'\''/d' "$config_file"
-  sed -i '/^define( '\''LOGGED_IN_KEY'\''/d' "$config_file"
-  sed -i '/^define( '\''NONCE_KEY'\''/d' "$config_file"
-  sed -i '/^define( '\''AUTH_SALT'\''/d' "$config_file"
-  sed -i '/^define( '\''SECURE_AUTH_SALT'\''/d' "$config_file"
-  sed -i '/^define( '\''LOGGED_IN_SALT'\''/d' "$config_file"
-  sed -i '/^define( '\''NONCE_SALT'\''/d' "$config_file"
-
-  # Agregar las nuevas claves al archivo
-  echo "$new_keys" >> "$config_file"
-
-  echo "Las claves se han actualizado en $config_file."
-else
-  echo "El archivo $config_file no existe."
-fi
-
-
 # Mostrar las contraseñas generadas en el archivo de registro
 echo "Aquí tus datos:"
 echo "Database Name: $DB_NAME"
