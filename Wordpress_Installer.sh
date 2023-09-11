@@ -128,12 +128,6 @@ sudo sed -i "s/database_name_here/$DB_NAME/" /var/www/html/wp-config.php
 sudo sed -i "s/username_here/$DB_USER/" /var/www/html/wp-config.php
 sudo sed -i "s/password_here/$DB_PASSWORD/" /var/www/html/wp-config.php
 
-# URL de donde obtener las nuevas claves
-SECRET_KEY_URL="https://api.wordpress.org/secret-key/1.1/salt/"
-
-# Descargar las nuevas claves desde la URL
-new_keys=$(curl -s "$SECRET_KEY_URL")
-
 # Mostrar las contraseñas generadas en el archivo de registro
 echo "Aquí tus datos:"
 echo "Database Name: $DB_NAME"
