@@ -160,10 +160,9 @@ fi
 
 # Mostrar las contraseñas generadas en el archivo de registro
 echo "Aquí tus datos:"
-echo "Database Name: $db_name"
-echo "Database User: $db_user"
-echo "Database Password: $db_password"
-echo "MySQL Root Password: $mysqlrootpass"
+echo "Database Name: $DB_NAME"
+echo "Database User: $DB_USER"
+echo "Database Password: $DB_PASSWORD"
 
 echo "Instalación de WordPress completada. Accede a tu sitio en http://$DOMAIN"
 
