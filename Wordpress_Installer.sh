@@ -42,7 +42,7 @@ y
 EOF
 
 # Instalar PHP 8.1 y extensiones
-sudo apt install php8.1-fpm php8.1 php8.1-common php8.1-mysql php8.1-xml php8.1-xmlrpc php8.1-curl php8.1-gd php8.1-imagick php8.1-cli php8.1-imap php8.1-mbstring php8.1-opcache php8.1-soap php8.1-zip php8.1-intl php8.1-bcmath unzip -y
+sudo apt install php8.1-fpm php8.1 php8.1-common php8.1-mysql php8.1-xml php8.1-xmlrpc php8.1-curl php8.1-gd php8.1-imagick php8.1-cli php8.1-imap php8.1-mbstring php8.1-opcache php8.1-soap php8.1-zip php8.1-intl php8.1-bcmath unzip memcached php8.1-memcache redis php8.1-redis -y
 
 # Configurar PHP
 sudo sed -i 's/upload_max_filesize =.*/upload_max_filesize = 1024M/' /etc/php/8.1/fpm/php.ini
