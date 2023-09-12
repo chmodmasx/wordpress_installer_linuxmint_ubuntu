@@ -5,7 +5,7 @@ y el archivo Fix es para activar https en wp_config.php de Wordpress.
 
 Recuerda que para inicializar wordpress una vez instalado deberás colocar localhost/wp-admin en tu navegador para iniciar.
 
-COMPATIBILIDAD: Linux mint 21.x y Ubuntu 22.04 (recuerda hacerlo en un sistema limpio y actualizado).
+COMPATIBILIDAD: Linux mint 21.x y Ubuntu 22.04 (recuerda hacerlo en un sistema limpio).
 
 NOTA: No olvides ejecutar siempre los scripts con "sudo" en este caso: **"sudo sh ./1-Wordpress_Installer.sh"**
 
