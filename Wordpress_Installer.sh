@@ -9,8 +9,6 @@ echo "  \____/          |_|                                                    "
 
 echo "\n"
 
-echo "Le pedira una contraseña a lo largo de la instalación, puede presionar Enter simplemente"
-echo "\n"
 read -p "Ingrese su nombre de dominio (por ejemplo mintlatam.com): " DOMAIN_USER
 
 DB_NAME="wp$(date +%s)"
@@ -105,8 +103,14 @@ ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
 # Reiniciar Nginx
 systemctl restart nginx
 
+# Crear el archivo ~/.my.cnf con las credenciales
+echo "[client]" > ~/.my.cnf
+echo "user=TU_USUARIO" >> ~/.my.cnf
+echo "password=TU_CONTRASEÑA" >> ~/.my.cnf
+chmod 600 ~/.my.cnf  # Establecer permisos restrictivos
+
 # Crear la base de datos y usuario de WordPress
-mysql -u root -p <<MYSQL_SCRIPT
+mysql -u root <<MYSQL_SCRIPT
 CREATE DATABASE $DB_NAME;
 CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
 GRANT ALL ON $DB_NAME.* TO '$DB_USER'@'localhost';
