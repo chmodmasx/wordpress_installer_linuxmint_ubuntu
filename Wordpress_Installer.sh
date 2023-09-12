@@ -133,8 +133,6 @@ sed -i "s/database_name_here/$DB_NAME/" /var/www/html/wp-config.php
 sed -i "s/username_here/$DB_USER/" /var/www/html/wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/" /var/www/html/wp-config.php
 
-sed -i "/That's all, stop editing! Happy publishing./a\if (\$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')\n\t\$_SERVER['HTTPS']='on';" /var/www/html/wp-config.php
-
 # Mostrar las contraseñas generadas en el archivo de registro
 echo "Aquí tus datos:"
 echo "Database Name: $DB_NAME"
