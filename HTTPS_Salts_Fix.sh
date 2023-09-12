@@ -12,5 +12,9 @@ echo "  \____/          |_|                                                    "
 
 sed -i "/That's all, stop editing! Happy publishing./a\if (\$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')\n\t\$_SERVER['HTTPS']='on';" /var/www/html/wp-config.php
 
+SALT=$(curl -L https://api.wordpress.org/secret-key/1.1/salt/)
+STRING='put your unique phrase here'
+printf '%s\n' "g/$STRING/d" a "$SALT" . w | ed -s wp-config.php
+
 echo "configuración agregada a wp-config.php - ya podemos utilizar nuestro sitio en HTTPS"
 echo "Gracias por utilizar el script de @EspadaRunica"
