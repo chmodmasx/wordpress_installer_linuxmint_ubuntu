@@ -14,7 +14,7 @@ sed -i "/That's all, stop editing! Happy publishing./a\if (\$_SERVER['HTTP_X_FOR
 
 SALT=$(curl -L https://api.wordpress.org/secret-key/1.1/salt/)
 STRING='put your unique phrase here'
-printf '%s\n' "g/$STRING/d" a "$SALT" . w | ed -s wp-config.php
+printf '%s\n' "g/$STRING/d" a "$SALT" . w | ed -s /var/www/html/wp-config.php
 
 echo "configuración agregada a wp-config.php - ya podemos utilizar nuestro sitio en HTTPS"
 echo "Gracias por utilizar el script de @EspadaRunica"
