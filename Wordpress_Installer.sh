@@ -18,16 +18,16 @@ DOMAIN="$DOMAIN_USER"
 
 
 # Actualizar el sistema
-#sudo apt update -y
-#sudo apt upgrade -y
+sudo apt update -y
+sudo apt upgrade -y
 
 # Instalar Nginx
-#apt install nginx -y
-#systemctl enable nginx
-#systemctl start nginx
+apt install nginx -y
+systemctl enable nginx
+systemctl start nginx
 
 # Instalar MySQL Server
-#apt install mysql-server -y
+apt install mysql-server -y
 mysql_secure_installation <<EOF
 
 y
@@ -40,7 +40,7 @@ y
 EOF
 
 # Instalar PHP 8.1 y extensiones
-#apt install php8.1-fpm php8.1 php8.1-common php8.1-mysql php8.1-xml php8.1-xmlrpc php8.1-curl php8.1-gd php8.1-imagick php8.1-cli php8.1-imap php8.1-mbstring php8.1-opcache php8.1-soap php8.1-zip php8.1-intl php8.1-bcmath unzip memcached php8.1-memcache redis php8.1-redis -y
+apt install php8.1-fpm php8.1 php8.1-common php8.1-mysql php8.1-xml php8.1-xmlrpc php8.1-curl php8.1-gd php8.1-imagick php8.1-cli php8.1-imap php8.1-mbstring php8.1-opcache php8.1-soap php8.1-zip php8.1-intl php8.1-bcmath unzip memcached php8.1-memcache redis php8.1-redis -y
 
 # Configurar PHP
 sed -i 's/upload_max_filesize =.*/upload_max_filesize = 1024M/' /etc/php/8.1/fpm/php.ini
@@ -133,12 +133,14 @@ sed -i "s/database_name_here/$DB_NAME/" /var/www/html/wp-config.php
 sed -i "s/username_here/$DB_USER/" /var/www/html/wp-config.php
 sed -i "s/password_here/$DB_PASSWORD/" /var/www/html/wp-config.php
 
+sed -i "/That's all, stop editing! Happy publishing./a\if (\$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')\n\t\$_SERVER['HTTPS']='on';" /var/www/html/wp-config.php
+
 # Mostrar las contraseñas generadas en el archivo de registro
 echo "Aquí tus datos:"
 echo "Database Name: $DB_NAME"
 echo "Database User: $DB_USER"
 echo "Database Password: $DB_PASSWORD"
 
-echo "Instalación de WordPress completada. Accede a tu sitio en http://$DOMAIN"
+echo "Instalación de WordPress completada. Accede a tu sitio en http://localhost/wp-admin/install.php"
 
 echo "Gracias por utilizar el script de @EspadaRunica"
