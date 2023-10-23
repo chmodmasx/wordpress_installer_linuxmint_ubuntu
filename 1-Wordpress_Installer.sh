@@ -105,8 +105,8 @@ systemctl restart nginx
 
 # Crear el archivo ~/.my.cnf con las credenciales
 echo "[client]" > ~/.my.cnf
-echo "user=TU_USUARIO" >> ~/.my.cnf
-echo "password=TU_CONTRASEÑA" >> ~/.my.cnf
+echo "user=$DB_USER" >> ~/.my.cnf
+echo "password=$DB_PASSWORD" >> ~/.my.cnf
 chmod 600 ~/.my.cnf  # Establecer permisos restrictivos
 
 # Crear la base de datos y usuario de WordPress
